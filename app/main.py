@@ -77,7 +77,17 @@ class ResponseTodoList(BaseModel):
     created_at: datetime = Field(title="datetime that the item was created")
     updated_at: datetime = Field(title="datetime that the item was updated")
 
+# Station4
+@app.get("/health", tags=["System"])
+def get_health():
+    return { "status": "ok" }
 
+# Station3
+@app.get("/echo")
+def get_echo(message, name):
+    return {"Message":	message + ' ' + name + '!'}
+
+# Station2
 @app.get("/hello", tags=["Hello"])
 def get_hello():
-    return {"Message": "Hello FastAPI!"}
+    return {"Message": "Hello TechTrain!"}
