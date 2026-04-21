@@ -2,10 +2,13 @@ import os
 from datetime import datetime
 
 from fastapi import FastAPI
+from fastapi import Depends
 from pydantic import BaseModel, Field
+from sqlalchemy.orm import Session
 
 from app.const import TodoItemStatusCode
 
+from .dependencies import get_db
 from .models.item_model import ItemModel
 from .models.list_model import ListModel
 
@@ -76,6 +79,12 @@ class ResponseTodoList(BaseModel):
     description: str | None = Field(default=None, title="Todo List Description", min_length=1, max_length=200)
     created_at: datetime = Field(title="datetime that the item was created")
     updated_at: datetime = Field(title="datetime that the item was updated")
+
+# Station6
+@app.get("/lists/{todo_list_id}", tags=["Todoリスト"])
+def get_todo_list(todo_list_id: int, db: Session = Depends(get_db)):
+    db_item = db.query(ListModel).filter(ListModel.id == todo_list_id).first()
+    return db_item
 
 # Station4
 @app.get("/health", tags=["System"])
