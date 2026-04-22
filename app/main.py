@@ -80,6 +80,18 @@ class ResponseTodoList(BaseModel):
     created_at: datetime = Field(title="datetime that the item was created")
     updated_at: datetime = Field(title="datetime that the item was updated")
 
+# Station7
+@app.post("/lists", tags=["Todoリスト"])
+def post_todo_list(new_date: NewTodoList, db: Session = Depends(get_db)):
+    post_date = ListModel(
+        title=new_date.title,
+        description=new_date.description
+    )
+    db.add(post_date)
+    db.commit()
+    db.refresh(post_date)
+    return post_date
+
 # Station6
 @app.get("/lists/{todo_list_id}", tags=["Todoリスト"])
 def get_todo_list(todo_list_id: int, db: Session = Depends(get_db)):
