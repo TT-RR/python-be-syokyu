@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 
 from fastapi import FastAPI
-from fastapi import Depends
+from fastapi import HTTPException, Depends
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
@@ -80,23 +80,42 @@ class ResponseTodoList(BaseModel):
     created_at: datetime = Field(title="datetime that the item was created")
     updated_at: datetime = Field(title="datetime that the item was updated")
 
-# Station7
+
+
+
+# Station6	Todoリスト取得
+@app.get("/lists/{todo_list_id}", tags=["Todoリスト"])
+def get_todo_list(todo_list_id: int, db: Session = Depends(get_db)):
+    db_item = db.query(ListModel).filter(ListModel.id == todo_list_id).first()
+    return db_item
+
+# Station7	Todoリスト新規作成
 @app.post("/lists", tags=["Todoリスト"])
-def post_todo_list(new_date: NewTodoList, db: Session = Depends(get_db)):
+def post_todo_list(new_data: NewTodoList, db: Session = Depends(get_db)):
     post_date = ListModel(
-        title=new_date.title,
-        description=new_date.description
+        title=new_data.title,
+        description=new_data.description
     )
     db.add(post_date)
     db.commit()
     db.refresh(post_date)
     return post_date
 
-# Station6
-@app.get("/lists/{todo_list_id}", tags=["Todoリスト"])
-def get_todo_list(todo_list_id: int, db: Session = Depends(get_db)):
-    db_item = db.query(ListModel).filter(ListModel.id == todo_list_id).first()
-    return db_item
+# Station8	Todoリスト更新
+@app.put("/lists/{todo_list_id}", tags=["Todoリスト"], response_model=ResponseTodoList)
+def put_todo_list(todo_list_id: int, data: UpdateTodoList, db: Session = Depends(get_db)):
+    update_data = db.query(ListModel).filter(ListModel.id == todo_list_id).first()
+    if not update_data:
+        raise HTTPException(status_code=404, detail="指定のIDのデータは見つかりませんでした")
+
+    if data.title:
+        update_data.title = data.title
+    if data.description:
+        update_data.description = data.description
+    db.add(update_data)
+    db.commit()
+    db.refresh(update_data)
+    return update_data
 
 # Station4
 @app.get("/health", tags=["System"])
