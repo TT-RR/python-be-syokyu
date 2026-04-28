@@ -117,6 +117,17 @@ def put_todo_list(todo_list_id: int, data: UpdateTodoList, db: Session = Depends
     db.refresh(update_data)
     return update_data
 
+# Station9	Todoリスト削除
+@app.delete("/lists/{todo_list_id}", tags=["Todoリスト"])
+def delete_todo_list(todo_list_id: int, db: Session = Depends(get_db)):
+    db_item = db.get(ListModel, todo_list_id)
+    if not db_item:
+        raise HTTPException(status_code=404, detail="Todo not found")
+
+    db.delete(db_item)
+    db.commit()
+    return {}
+
 # Station4
 @app.get("/health", tags=["System"])
 def get_health():
