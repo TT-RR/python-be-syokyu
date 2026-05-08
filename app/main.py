@@ -161,7 +161,7 @@ def post_todo_item(todo_list_id:int, new_data: NewTodoItem, db: Session = Depend
     db.refresh(post_date)
     return post_date
 
-# Station12	Todoアイテムト更新
+# Station12	Todoアイテム更新
 @app.put("/lists/{todo_list_id}/items/{todo_item_id}",
 			tags=["Todo項目"],
             response_model=ResponseTodoItem)
@@ -190,6 +190,20 @@ def put_todo_item(todo_list_id: int,
     db.commit()
     db.refresh(update_data)
     return update_data
+
+# Station13	Todoアイテム削除
+@app.delete("/lists/{todo_list_id}/items/{todo_item_id}", tags=["Todo項目"])
+def delete_todo_item(todo_list_id: int,
+				todo_item_id: int,
+                db: Session = Depends(get_db)):
+    db_item = db.get(ItemModel, todo_item_id)
+    
+    if not db_item or db_item.todo_list_id != todo_list_id:
+        raise HTTPException(status_code=404, detail="Todo Item not found")
+
+    db.delete(db_item)
+    db.commit()
+    return {}
 
 # Station4
 @app.get("/health", tags=["System"])
