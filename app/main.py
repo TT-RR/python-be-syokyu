@@ -142,6 +142,25 @@ def get_todo_item(todo_list_id: int, todo_item_id: int, db: Session = Depends(ge
         
     return todo_item
 
+# Station11	Todoアイテム新規作成
+@app.post("/lists/{todo_list_id}/items",
+			tags=["Todo項目"],
+            response_model=ResponseTodoItem)
+def post_todo_item(todo_list_id:int, new_data: NewTodoItem, db: Session = Depends(get_db)):
+    post_date = ItemModel(
+        # title=new_data.title,
+        # description=new_data.description,
+        # due_at=new_data.due_at
+        # model_dumpを使って辞書展開するとコードがスッキリ
+        **new_data.model_dump(),
+        todo_list_id=todo_list_id,
+    )
+    post_date.status_code = TodoItemStatusCode.NOT_COMPLETED.value
+    db.add(post_date)
+    db.commit()
+    db.refresh(post_date)
+    return post_date
+
 # Station4
 @app.get("/health", tags=["System"])
 def get_health():
