@@ -161,6 +161,36 @@ def post_todo_item(todo_list_id:int, new_data: NewTodoItem, db: Session = Depend
     db.refresh(post_date)
     return post_date
 
+# Station12	Todoアイテムト更新
+@app.put("/lists/{todo_list_id}/items/{todo_item_id}",
+			tags=["Todo項目"],
+            response_model=ResponseTodoItem)
+def put_todo_item(todo_list_id: int,
+				todo_item_id: int,
+                data: UpdateTodoItem,
+                db: Session = Depends(get_db)):
+    update_data = db.query(ItemModel).filter(
+        ItemModel.id == todo_item_id,
+        ItemModel.todo_list_id == todo_list_id
+    ).first()
+    if not update_data:
+        raise HTTPException(status_code=404, detail="指定のIDのデータは見つかりませんでした")
+    
+    if data.complete is not None:
+        if data.complete:
+            update_data.status_code = TodoItemStatusCode.COMPLETED.value
+        else:
+            update_data.status_code = TodoItemStatusCode.NOT_COMPLETED.value
+            
+    update_dict = data.model_dump(exclude_unset=True, exclude={"complete"})
+    for key, value in update_dict.items():
+        setattr(update_data, key, value)
+    
+    db.add(update_data)
+    db.commit()
+    db.refresh(update_data)
+    return update_data
+
 # Station4
 @app.get("/health", tags=["System"])
 def get_health():
