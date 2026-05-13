@@ -3,7 +3,6 @@ from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 
 from app.dependencies import get_db
-from app.models.list_model import ListModel
 from app.crud import list_crud
 from app.schemas.list_schema import NewTodoList, UpdateTodoList, ResponseTodoList
 

@@ -6,10 +6,12 @@ from app.const import TodoItemStatusCode
 
 from app.dependencies import get_db
 from app.models.item_model import ItemModel
+from app.crud import item_crud
 from app.schemas.item_schema import NewTodoItem, UpdateTodoItem, ResponseTodoItem
 
+
 router = APIRouter(
-	prefix="/items",
+	prefix="/lists",
 	tags=["Todo項目"],
 )
 
@@ -18,13 +20,7 @@ router = APIRouter(
 			tags=["Todo項目"],
             response_model=ResponseTodoItem)
 def get_todo_item(todo_list_id: int, todo_item_id: int, db: Session = Depends(get_db)):
-    todo_item = db.query(ItemModel).filter(
-        ItemModel.id == todo_item_id,
-        ItemModel.todo_list_id == todo_list_id
-    ).first()
-    if not todo_item:
-        raise HTTPException(status_code=404, detail="Todo Item not found")
-        
+    todo_item = item_crud.get_todo_item(todo_list_id, todo_item_id, db)
     return todo_item
 
 # Station11	Todoアイテム新規作成
@@ -32,19 +28,8 @@ def get_todo_item(todo_list_id: int, todo_item_id: int, db: Session = Depends(ge
 			tags=["Todo項目"],
             response_model=ResponseTodoItem)
 def post_todo_item(todo_list_id:int, new_data: NewTodoItem, db: Session = Depends(get_db)):
-    post_date = ItemModel(
-        # title=new_data.title,
-        # description=new_data.description,
-        # due_at=new_data.due_at
-        # model_dumpを使って辞書展開するとコードがスッキリ
-        **new_data.model_dump(),
-        todo_list_id=todo_list_id,
-    )
-    post_date.status_code = TodoItemStatusCode.NOT_COMPLETED.value
-    db.add(post_date)
-    db.commit()
-    db.refresh(post_date)
-    return post_date
+    post_data = item_crud.post_todo_item(todo_list_id, new_data, db)
+    return post_data
 
 # Station12	Todoアイテム更新
 @router.put("/lists/{todo_list_id}/items/{todo_item_id}",
@@ -54,26 +39,7 @@ def put_todo_item(todo_list_id: int,
 				todo_item_id: int,
                 data: UpdateTodoItem,
                 db: Session = Depends(get_db)):
-    update_data = db.query(ItemModel).filter(
-        ItemModel.id == todo_item_id,
-        ItemModel.todo_list_id == todo_list_id
-    ).first()
-    if not update_data:
-        raise HTTPException(status_code=404, detail="指定のIDのデータは見つかりませんでした")
-    
-    if data.complete is not None:
-        if data.complete:
-            update_data.status_code = TodoItemStatusCode.COMPLETED.value
-        else:
-            update_data.status_code = TodoItemStatusCode.NOT_COMPLETED.value
-            
-    update_dict = data.model_dump(exclude_unset=True, exclude={"complete"})
-    for key, value in update_dict.items():
-        setattr(update_data, key, value)
-    
-    db.add(update_data)
-    db.commit()
-    db.refresh(update_data)
+    update_data = item_crud.put_todo_item(todo_list_id, todo_item_id, data, db)
     return update_data
 
 # Station13	Todoアイテム削除
@@ -81,11 +47,7 @@ def put_todo_item(todo_list_id: int,
 def delete_todo_item(todo_list_id: int,
 				todo_item_id: int,
                 db: Session = Depends(get_db)):
-    db_item = db.get(ItemModel, todo_item_id)
-    
-    if not db_item or db_item.todo_list_id != todo_list_id:
-        raise HTTPException(status_code=404, detail="Todo Item not found")
-
-    db.delete(db_item)
-    db.commit()
+    item_flag = item_crud.delete_todo_list(todo_list_id, todo_item_id, db)
+    if item_flag == False:
+        HTTPException(status_code=404, detail="Todo not found")
     return {}
