@@ -11,6 +11,12 @@ router = APIRouter(
 	tags=["TODOリスト"],
 )
 
+# Station15	Todoリスト全件取得
+@router.get("/", response_model=list[ResponseTodoList])
+def get_todo_lists(db: Session = Depends(get_db)):
+    all_list_data = list_crud.get_todo_lists(db)
+    return all_list_data
+
 # Station6	Todoリスト取得
 @router.get("/{todo_list_id}", response_model=ResponseTodoList)
 def get_todo_list(todo_list_id: int, db: Session = Depends(get_db)):
