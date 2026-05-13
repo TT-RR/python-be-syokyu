@@ -8,6 +8,9 @@
 	],
 	"service": "app",
 	"workspaceFolder": "/opt/python-be-syokyu-app",
+	"features": {
+		"ghcr.io/devcontainers/features/git:1": {}
+	},
 	"customizations": {
     "vscode": {
       "extensions": [
@@ -16,5 +19,6 @@
         "ms-python.debugpy"
       ]
     }
-  }
+  },
+  "remoteUser": "root"
 }

@@ -12,25 +12,25 @@ router = APIRouter(
 )
 
 # Station6	Todoリスト取得
-@router.get("/lists/{todo_list_id}", tags=["Todoリスト"])
+@router.get("/{todo_list_id}", response_model=ResponseTodoList)
 def get_todo_list(todo_list_id: int, db: Session = Depends(get_db)):
     db_item = list_crud.get_todo_list(todo_list_id, db)
     return db_item
 
 # Station7	Todoリスト新規作成
-@router.post("/lists", tags=["Todoリスト"])
+@router.post("/", response_model=ResponseTodoList)
 def post_todo_list(new_data: NewTodoList, db: Session = Depends(get_db)):
     post_date = list_crud.post_todo_list(new_data, db)
     return post_date
 
 # Station8	Todoリスト更新
-@router.put("/lists/{todo_list_id}", tags=["Todoリスト"], response_model=ResponseTodoList)
+@router.put("/{todo_list_id}", response_model=ResponseTodoList)
 def put_todo_list(todo_list_id: int, data: UpdateTodoList, db: Session = Depends(get_db)):
     update_data = list_crud.put_todo_list(todo_list_id, data, db)
     return update_data
 
 # Station9	Todoリスト削除
-@router.delete("/lists/{todo_list_id}", tags=["Todoリスト"])
+@router.delete("/{todo_list_id}")
 def delete_todo_list(todo_list_id: int, db: Session = Depends(get_db)):
 	item_flag = list_crud.delete_todo_list(todo_list_id, db)
 	

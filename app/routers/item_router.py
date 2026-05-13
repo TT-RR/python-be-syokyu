@@ -2,39 +2,32 @@ from fastapi import FastAPI
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 
-from app.const import TodoItemStatusCode
-
 from app.dependencies import get_db
-from app.models.item_model import ItemModel
 from app.crud import item_crud
 from app.schemas.item_schema import NewTodoItem, UpdateTodoItem, ResponseTodoItem
 
 
 router = APIRouter(
-	prefix="/lists",
+	prefix="/lists/{todo_list_id}/items",
 	tags=["Todo項目"],
 )
 
 # Station10	Todoアイテム取得
-@router.get("/lists/{todo_list_id}/items/{todo_item_id}", 
-			tags=["Todo項目"],
-            response_model=ResponseTodoItem)
+@router.get("/{todo_item_id}", response_model=ResponseTodoItem)
 def get_todo_item(todo_list_id: int, todo_item_id: int, db: Session = Depends(get_db)):
     todo_item = item_crud.get_todo_item(todo_list_id, todo_item_id, db)
     return todo_item
 
+
 # Station11	Todoアイテム新規作成
-@router.post("/lists/{todo_list_id}/items",
-			tags=["Todo項目"],
-            response_model=ResponseTodoItem)
+@router.post("/", response_model=ResponseTodoItem)
 def post_todo_item(todo_list_id:int, new_data: NewTodoItem, db: Session = Depends(get_db)):
     post_data = item_crud.post_todo_item(todo_list_id, new_data, db)
     return post_data
 
+
 # Station12	Todoアイテム更新
-@router.put("/lists/{todo_list_id}/items/{todo_item_id}",
-			tags=["Todo項目"],
-            response_model=ResponseTodoItem)
+@router.put("/{todo_item_id}", response_model=ResponseTodoItem)
 def put_todo_item(todo_list_id: int,
 				todo_item_id: int,
                 data: UpdateTodoItem,
@@ -42,8 +35,9 @@ def put_todo_item(todo_list_id: int,
     update_data = item_crud.put_todo_item(todo_list_id, todo_item_id, data, db)
     return update_data
 
+
 # Station13	Todoアイテム削除
-@router.delete("/lists/{todo_list_id}/items/{todo_item_id}", tags=["Todo項目"])
+@router.delete("/{todo_item_id}")
 def delete_todo_item(todo_list_id: int,
 				todo_item_id: int,
                 db: Session = Depends(get_db)):
