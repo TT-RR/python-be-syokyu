@@ -5,8 +5,10 @@ from app.models.list_model import ListModel
 from app.schemas.list_schema import NewTodoList, UpdateTodoList, ResponseTodoList
 
 
-def get_todo_lists(db: Session):
-	return db.query(ListModel).all()
+def get_todo_lists(per_page: int, page: int, db: Session):
+	# Station 18 オフセットページネーションの追加
+	return db.query(ListModel).order_by(ListModel.id.asc()) \
+		.limit(per_page).offset((page - 1) * per_page).all()
 
 def get_todo_list(todo_list_id: int, db: Session):
     return db.query(ListModel).filter(ListModel.id == todo_list_id).first()

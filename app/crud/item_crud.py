@@ -8,8 +8,10 @@ from app.models.list_model import ListModel
 from app.schemas.item_schema import NewTodoItem, UpdateTodoItem, ResponseTodoItem
 
 
-def get_todo_items(db: Session):
-    return db.query(ItemModel).all()
+def get_todo_items(per_page: int, page: int, db: Session):
+    # Station 18 オフセットページネーションの追加
+    return db.query(ItemModel).order_by(ItemModel.id.asc()) \
+        .limit(per_page).offset((page-1)*per_page).all()
 
 def get_todo_item(todo_list_id: int, todo_item_id: int, db: Session):
     return db.query(ItemModel).filter(

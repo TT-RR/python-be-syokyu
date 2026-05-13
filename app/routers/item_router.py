@@ -14,8 +14,8 @@ router = APIRouter(
 
 # Station15	Todoアイテム全件取得
 @router.get("/", response_model=list[ResponseTodoItem])
-def get_todo_items(db: Session = Depends(get_db)):
-    all_item_data = item_crud.get_todo_items(db)
+def get_todo_items(per_page: int, page: int, db: Session = Depends(get_db)):
+    all_item_data = item_crud.get_todo_items(per_page, page, db)
     return all_item_data
 
 # Station10	Todoアイテム取得
