@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.const import TodoItemStatusCode
 
 from app.models.item_model import ItemModel
+from app.models.list_model import ListModel
 from app.schemas.item_schema import NewTodoItem, UpdateTodoItem, ResponseTodoItem
 
 
@@ -11,16 +12,15 @@ def get_todo_items(db: Session):
     return db.query(ItemModel).all()
 
 def get_todo_item(todo_list_id: int, todo_item_id: int, db: Session):
-    todo_item = db.query(ItemModel).filter(
+    return db.query(ItemModel).filter(
         ItemModel.id == todo_item_id,
         ItemModel.todo_list_id == todo_list_id
     ).first()
-    if not todo_item:
-        raise HTTPException(status_code=404, detail="Todo Item not found")
-        
-    return todo_item
 
 def post_todo_item(todo_list_id:int, new_data: NewTodoItem, db: Session):
+    todo_list = db.query(ListModel).filter(ListModel.id == todo_list_id).first()
+    if not todo_list:
+        raise HTTPException(status_code=404, detail="Todo List (ID: {todo_list_id}) not found")
     post_date = ItemModel(
         # title=new_data.title,
         # description=new_data.description,
@@ -59,11 +59,13 @@ def put_todo_item(todo_list_id: int, todo_item_id: int, data: UpdateTodoItem, db
     return update_data
 
 def delete_todo_item(todo_list_id: int, todo_item_id: int, db: Session):
+    todo_list = db.query(ListModel).filter(ListModel.id == todo_list_id).first()
+    if not todo_list:
+       return False
+
     db_item = db.get(ItemModel, todo_item_id)
-    
-    if not db_item or db_item.todo_list_id != todo_list_id:
+    if not db_item:
         return False
-        raise HTTPException(status_code=404, detail="Todo Item not found")
 
     db.delete(db_item)
     db.commit()

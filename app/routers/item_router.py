@@ -22,6 +22,8 @@ def get_todo_items(db: Session = Depends(get_db)):
 @router.get("/{todo_item_id}", response_model=ResponseTodoItem)
 def get_todo_item(todo_list_id: int, todo_item_id: int, db: Session = Depends(get_db)):
     todo_item = item_crud.get_todo_item(todo_list_id, todo_item_id, db)
+    if not todo_item:
+        raise HTTPException(status_code=404, detail="Todo Item not found")
     return todo_item
 
 
@@ -47,7 +49,7 @@ def put_todo_item(todo_list_id: int,
 def delete_todo_item(todo_list_id: int,
 				todo_item_id: int,
                 db: Session = Depends(get_db)):
-    item_flag = item_crud.delete_todo_list(todo_list_id, todo_item_id, db)
+    item_flag = item_crud.delete_todo_item(todo_list_id, todo_item_id, db)
     if item_flag == False:
-        HTTPException(status_code=404, detail="Todo not found")
+        raise HTTPException(status_code=404, detail="Todo not found")
     return {}
