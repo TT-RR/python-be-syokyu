@@ -11,6 +11,7 @@ from app.const import TodoItemStatusCode
 from .dependencies import get_db
 from .models.item_model import ItemModel
 from .models.list_model import ListModel
+from .routers import list_router
 
 DEBUG = os.environ.get("DEBUG", "") == "true"
 
@@ -57,76 +58,7 @@ class ResponseTodoItem(BaseModel):
     updated_at: datetime = Field(title="datetime that the item was updated")
 
 
-class NewTodoList(BaseModel):
-    """TODOリスト新規作成時のスキーマ."""
-
-    title: str = Field(title="Todo List Title", min_length=1, max_length=100)
-    description: str | None = Field(default=None, title="Todo List Description", min_length=1, max_length=200)
-
-
-class UpdateTodoList(BaseModel):
-    """TODOリスト更新時のスキーマ."""
-
-    title: str | None = Field(default=None, title="Todo List Title", min_length=1, max_length=100)
-    description: str | None = Field(default=None, title="Todo List Description", min_length=1, max_length=200)
-
-
-class ResponseTodoList(BaseModel):
-    """TODOリストのレスポンススキーマ."""
-
-    id: int
-    title: str = Field(title="Todo List Title", min_length=1, max_length=100)
-    description: str | None = Field(default=None, title="Todo List Description", min_length=1, max_length=200)
-    created_at: datetime = Field(title="datetime that the item was created")
-    updated_at: datetime = Field(title="datetime that the item was updated")
-
-
-
-
-# Station6	Todoリスト取得
-@app.get("/lists/{todo_list_id}", tags=["Todoリスト"])
-def get_todo_list(todo_list_id: int, db: Session = Depends(get_db)):
-    db_item = db.query(ListModel).filter(ListModel.id == todo_list_id).first()
-    return db_item
-
-# Station7	Todoリスト新規作成
-@app.post("/lists", tags=["Todoリスト"])
-def post_todo_list(new_data: NewTodoList, db: Session = Depends(get_db)):
-    post_date = ListModel(
-        title=new_data.title,
-        description=new_data.description
-    )
-    db.add(post_date)
-    db.commit()
-    db.refresh(post_date)
-    return post_date
-
-# Station8	Todoリスト更新
-@app.put("/lists/{todo_list_id}", tags=["Todoリスト"], response_model=ResponseTodoList)
-def put_todo_list(todo_list_id: int, data: UpdateTodoList, db: Session = Depends(get_db)):
-    update_data = db.query(ListModel).filter(ListModel.id == todo_list_id).first()
-    if not update_data:
-        raise HTTPException(status_code=404, detail="指定のIDのデータは見つかりませんでした")
-
-    if data.title:
-        update_data.title = data.title
-    if data.description:
-        update_data.description = data.description
-    db.add(update_data)
-    db.commit()
-    db.refresh(update_data)
-    return update_data
-
-# Station9	Todoリスト削除
-@app.delete("/lists/{todo_list_id}", tags=["Todoリスト"])
-def delete_todo_list(todo_list_id: int, db: Session = Depends(get_db)):
-    db_item = db.get(ListModel, todo_list_id)
-    if not db_item:
-        raise HTTPException(status_code=404, detail="Todo not found")
-
-    db.delete(db_item)
-    db.commit()
-    return {}
+app.include_router(list_router.router)
 
 # Station10	Todoアイテム取得
 @app.get("/lists/{todo_list_id}/items/{todo_item_id}", 
