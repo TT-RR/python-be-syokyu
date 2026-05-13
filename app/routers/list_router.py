@@ -21,6 +21,8 @@ def get_todo_lists(db: Session = Depends(get_db)):
 @router.get("/{todo_list_id}", response_model=ResponseTodoList)
 def get_todo_list(todo_list_id: int, db: Session = Depends(get_db)):
     db_item = list_crud.get_todo_list(todo_list_id, db)
+    if db_item is None:
+         raise HTTPException(status_code=404, detail="TODO List not found")
     return db_item
 
 # Station7	Todoリスト新規作成
@@ -41,6 +43,6 @@ def delete_todo_list(todo_list_id: int, db: Session = Depends(get_db)):
 	item_flag = list_crud.delete_todo_list(todo_list_id, db)
 	
 	if item_flag == False:
-		HTTPException(status_code=404, detail="Todo not found")
+		raise HTTPException(status_code=404, detail="Todo not found")
 	return {}
 		
